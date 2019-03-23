@@ -84,8 +84,7 @@ public class BookmarkAutoComplete extends AppCompatActivity implements BookmarkD
         BookmarkData newBookmark = new BookmarkData(finalPlace.getLatLng().latitude + "," + finalPlace.getLatLng().longitude,finalPlace.getName().toString());
         addBookmark(newBookmark);
 
-        Intent intent = new Intent(BookmarkAutoComplete.this,BookmarkPage.class);
-        startActivity(intent);
+        finish();
     }
 
     private void updateBookmarkData(){
