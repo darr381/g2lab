@@ -20,7 +20,11 @@ import java.util.ArrayList;
 
 import com.google.android.gms.maps.model.LatLng;
 
+
+
 public class SortingSystem {
+
+    private static String prevTime = null;
 
     public static ArrayList<CarPark> sortCarparks(LatLng llc) {
 
@@ -205,5 +209,17 @@ public class SortingSystem {
 
     }
 
+
+    public static ArrayList<CarPark> getSortedList(LatLng location){
+        if(prevTime == null){
+            prevTime = Preference.getTime();
+            APIRetrieveSystem.retrieveall();
+        }else if(!prevTime.equals(Preference.getTime())){
+            APIRetrieveSystem.retrieveall();
+            prevTime = Preference.getTime();
+        }
+        Log.d("Response", CarParkList.getCarParkList().size()+"");
+        return SortingSystem.sortCarparks(location);
+    }
 
 }

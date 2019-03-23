@@ -49,11 +49,6 @@ public class Facade {
         return adapter;
     }
 
-    public BookmarkAdapter getAdapter(Context context, int item){
-        BookmarkAdapter adapter = new BookmarkAdapter(context, item);
-        return adapter;
-    }
-
     public SharedPreferences getBookmarkData(Context context){
         return BookmarkAdapter.getBookmarkData(context);
     }

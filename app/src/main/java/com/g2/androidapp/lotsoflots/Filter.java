@@ -36,11 +36,9 @@ public class Filter extends AppCompatActivity implements DatePickerDialog.OnDate
     Spinner distanceSpinner, vacancySpinner, sortSpinner;
     Date date;
     int day,month,year,hour,minute,dayFinal,monthFinal,yearFinal,hourFinal,minuteFinal;
-    Facade instance;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
-        instance = Facade.getInstance();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_filter);
         makeSpinner();
@@ -51,7 +49,7 @@ public class Filter extends AppCompatActivity implements DatePickerDialog.OnDate
             @Override
             public void onClick(View v) {
 
-                instance.UpdatePreferences(distance, vacancy, hourFinal, minuteFinal, date, sort);
+                PreferenceUpdater.updateAll(distance, vacancy, hourFinal, minuteFinal, date, sort);
 
 
                 Calendar calendar = Calendar.getInstance();
