@@ -17,19 +17,13 @@ import java.util.ArrayList;
 import static android.content.Context.MODE_PRIVATE;
 
 public class BookmarkAdapter extends ArrayAdapter<BookmarkData> {
+    BookmarkDataManager manager;
 
-    public BookmarkAdapter( Context context, int resource) {
-        super(context, resource);
-    }
-
-    public BookmarkAdapter(Context context, int resource, ArrayList<BookmarkData> data){
+    public BookmarkAdapter(Context context, int resource, ArrayList<BookmarkData> data, BookmarkDataManager bookmarkManager){
         super(context,resource,data);
+        manager = bookmarkManager;
     }
 
-    //public ArrayAdapter(@NonNull Context context, @LayoutRes int resource,
-    //                    @NonNull List<T> objects) {
-    //    this(context, resource, 0, objects);
-    //}
 
     @Override
     public View getView (final int position, @Nullable View convertView, @NonNull ViewGroup parent) {
@@ -39,7 +33,6 @@ public class BookmarkAdapter extends ArrayAdapter<BookmarkData> {
         } else {
             view = ((LinearLayout) convertView);
         }
-
         TextView textView = view.findViewById(R.id.bookmark_address);
         textView.setText(getItem(position).name);
         textView.setOnClickListener(new View.OnClickListener() {
@@ -48,15 +41,15 @@ public class BookmarkAdapter extends ArrayAdapter<BookmarkData> {
                 Intent intent = new Intent(getContext(), MapsActivity.class);
                 intent.putExtra("com.g2.androidapp.lotsoflots.BMT", getItem(position).latlng);
                 getContext().startActivity(intent);
-
             }
         });
-
+        textView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                manager.deleteBookmark(getItem(position).name);
+                return false;
+            }
+        });
         return view;
-    }
-
-    public static SharedPreferences getBookmarkData(Context context){
-        SharedPreferences sharedPreferences = context.getSharedPreferences("bookmarkData", MODE_PRIVATE);
-        return sharedPreferences;
     }
 }
