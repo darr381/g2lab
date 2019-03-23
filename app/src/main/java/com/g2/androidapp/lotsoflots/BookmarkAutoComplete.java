@@ -20,15 +20,13 @@ import com.google.gson.reflect.TypeToken;
 
 import java.util.ArrayList;
 
-public class BookmarkAutoComplete extends AppCompatActivity {
+public class BookmarkAutoComplete extends AppCompatActivity implements BookmarkDataManager {
     private static final String TAG = "MainActivity";
     int PLACE_AUTOCOMPLETE_REQUEST_CODE =1;
-    private final static int REQUEST_CODE_1 = 1;
     Place finalPlace;
-    BookmarkPage bookmarkPage = new BookmarkPage();
-    SharedPreferences sharedPreferences;
     static int i = 0;
     private static Gson gson = new Gson();
+    ArrayList<BookmarkData> bookmarkData;
 
     AutocompleteFilter autocompleteFilter = new AutocompleteFilter.Builder()
             .setTypeFilter(Place.TYPE_COUNTRY)
@@ -51,7 +49,7 @@ public class BookmarkAutoComplete extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_test_auto_complete);
-        SharedPreferences sharedPreferences = getSharedPreferences("bookmarkData",MODE_PRIVATE);
+
         PlaceAutocompleteFragment autocompleteFragment = (PlaceAutocompleteFragment)
                 getFragmentManager().findFragmentById(R.id.place_autocomplete_fragment);
         autocompleteFragment.setFilter(autocompleteFilter);
@@ -76,108 +74,39 @@ public class BookmarkAutoComplete extends AppCompatActivity {
             }
         });
 
+        updateBookmarkData();
+
     }
 
     public void printAddedBookmark(View view) {
-        ArrayList<BookmarkData> bookmarkDataList;
-        sharedPreferences = getSharedPreferences("bookmarkData",MODE_PRIVATE);
-        SharedPreferences.Editor editor = getSharedPreferences("bookmarkData",MODE_PRIVATE).edit();
+        updateBookmarkData();
 
-        String sharedPrefData = sharedPreferences.getString("bookmarkData","null");
-        if (sharedPrefData.equals("null")){
-            bookmarkDataList = new ArrayList<>();
-        }
-        else {
-            bookmarkDataList = gson.fromJson(sharedPrefData,new TypeToken<ArrayList<BookmarkData>>(){}.getType());
-        }
+        BookmarkData newBookmark = new BookmarkData(finalPlace.getLatLng().latitude + "," + finalPlace.getLatLng().longitude,finalPlace.getName().toString());
+        addBookmark(newBookmark);
 
-        Intent intent = new Intent(BookmarkAutoComplete.this,BookmarkPage.class);
-        BookmarkData bookmarkData = new BookmarkData(finalPlace.getLatLng().latitude + "," + finalPlace.getLatLng().longitude,finalPlace.getName().toString());
-        //BookmarkData bookmarkData = new BookmarkData(finalPlace.getLatLng(),finalPlace.getName().toString());
-        //bookmarkDataList.add(new BookmarkData(finalPlace.getLatLng(),finalPlace.getName().toString()));
-        bookmarkDataList.add(bookmarkData);
-
-        // SharedPreferences.Editor editor = getSharedPreferences("bookmarkData",MODE_PRIVATE).edit();
-//        editor.putString("bookmark",gson.toJson(bookmarkDataList));
-//        editor.apply();
-        if (bookmarkDataList.size() == 0){
-            editor.putString("bookmarkData","");
-            editor.apply();
-        }
-        else {
-            storeBookmarks(editor,i,bookmarkDataList);
-        }
-        i++;
-        startActivity(intent);
+        finish();
     }
 
-    public void storeBookmarks(SharedPreferences.Editor editor , int i, ArrayList<BookmarkData> bookmarkDataList){
-        editor.putString("bookmarkData",gson.toJson(bookmarkDataList));
-        editor.apply();
-
-//        switch(i){
-//            case 0:
-//                editor.putString("bookmark1",gson.toJson(bookmarkDataList));
-//                editor.apply();
-//                Log.i("1","1" );
-//
-//                break;
-//            case 1:
-//                editor.putString("bookmark2",gson.toJson(bookmarkDataList));
-//                editor.apply();
-//                Log.i("2","2" );
-//
-//                break;
-//            case 2:
-//                editor.putString("bookmark3",gson.toJson(bookmarkDataList));
-//                editor.apply();
-//                Log.i("3","3" );
-//
-//                break;
-//            case 3:
-//                editor.putString("bookmark4",gson.toJson(bookmarkDataList));
-//                editor.apply();
-//                Log.i("4","4" );
-//
-//                break;
-//            case 4:
-//                editor.putString("bookmark5",gson.toJson(bookmarkDataList));
-//                editor.apply();
-//                Log.i("5","5" );
-//
-//                break;
-//
-//            case 5:
-//                editor.putString("bookmark5",gson.toJson(bookmarkDataList));
-//                editor.apply();
-//                Log.i("6","6" );
-//
-//                break;
-//
-//            case 6:
-//                editor.putString("bookmark5",gson.toJson(bookmarkDataList));
-//                editor.apply();
-//                Log.i("7","7" );
-//
-//                break;
-//
-//            case 7:
-//                editor.putString("bookmark5",gson.toJson(bookmarkDataList));
-//                editor.apply();
-//                Log.i("8","8" );
-//
-//                break;
-//
-//            case 8:
-//                editor.putString("bookmark5",gson.toJson(bookmarkDataList));
-//                editor.apply();
-//                Log.i("9","9" );
-//
-//                break;
-//
-//
-//
-//        }
+    private void updateBookmarkData(){
+        String preferenceData = getSharedPreferences(BOOKMARK_KEY, MODE_PRIVATE).getString("bookmarkData","Not available");
+        if (!preferenceData.equals("Not available") && !preferenceData.equals("")) {
+            bookmarkData = gson.fromJson(preferenceData,new TypeToken<ArrayList<BookmarkData>>(){}.getType());
+        }
+        else {
+            bookmarkData = new ArrayList<>();
+        }
     }
 
+    @Override
+    public void deleteBookmark(String key) {
+
+    }
+
+    @Override
+    public void addBookmark(BookmarkData bookmark) {
+        SharedPreferences.Editor editor = getSharedPreferences(BOOKMARK_KEY, MODE_PRIVATE).edit();
+        bookmarkData.add(bookmark);
+        editor.putString("bookmarkData",gson.toJson(bookmarkData));
+        editor.commit();
+    }
 }

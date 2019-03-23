@@ -12,35 +12,34 @@ import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.chauthai.swipereveallayout.SwipeRevealLayout;
+import com.chauthai.swipereveallayout.ViewBinderHelper;
+
 import java.util.ArrayList;
 
 import static android.content.Context.MODE_PRIVATE;
 
 public class BookmarkAdapter extends ArrayAdapter<BookmarkData> {
+    BookmarkDataManager manager;
+    private final ViewBinderHelper viewBinderHelper = new ViewBinderHelper();
 
-    public BookmarkAdapter( Context context, int resource) {
-        super(context, resource);
-    }
-
-    public BookmarkAdapter(Context context, int resource, ArrayList<BookmarkData> data){
+    public BookmarkAdapter(Context context, int resource, ArrayList<BookmarkData> data, BookmarkDataManager bookmarkManager){
         super(context,resource,data);
+        manager = bookmarkManager;
+        viewBinderHelper.setOpenOnlyOne(true);
     }
 
-    //public ArrayAdapter(@NonNull Context context, @LayoutRes int resource,
-    //                    @NonNull List<T> objects) {
-    //    this(context, resource, 0, objects);
-    //}
 
     @Override
     public View getView (final int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-        LinearLayout view;
+        SwipeRevealLayout view;
         if (convertView == null) {
-            view = ((LinearLayout) LayoutInflater.from(getContext()).inflate(R.layout.bookmark_list_item, parent, false));
+            view = ((SwipeRevealLayout) LayoutInflater.from(getContext()).inflate(R.layout.bookmark_list_item, parent, false));
         } else {
-            view = ((LinearLayout) convertView);
+            view = ((SwipeRevealLayout) convertView);
         }
-
         TextView textView = view.findViewById(R.id.bookmark_address);
+        TextView deleteView = view.findViewById(R.id.bookmark_delete);
         textView.setText(getItem(position).name);
         textView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -48,15 +47,18 @@ public class BookmarkAdapter extends ArrayAdapter<BookmarkData> {
                 Intent intent = new Intent(getContext(), MapsActivity.class);
                 intent.putExtra("com.g2.androidapp.lotsoflots.BMT", getItem(position).latlng);
                 getContext().startActivity(intent);
-
+            }
+        });
+        deleteView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                manager.deleteBookmark(getItem(position).name);
             }
         });
 
+        viewBinderHelper.bind((view), getItem(position).name);
         return view;
     }
 
-    public static SharedPreferences getBookmarkData(Context context){
-        SharedPreferences sharedPreferences = context.getSharedPreferences("bookmarkData", MODE_PRIVATE);
-        return sharedPreferences;
-    }
+
 }
