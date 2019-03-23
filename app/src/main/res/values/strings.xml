@@ -26,4 +26,10 @@
         <item>Distance</item>
         <item>Vacancy</item>
     </string-array>
+
+
+    <string name="access_token" translatable="false">pk.eyJ1IjoidmluY2VudHdvbmcyMTg4IiwiYSI6ImNqdGw2OTc0NzBpMWw0YXEzMmw4ZGEyYzgifQ.mTclxlcZktYR4bc6bc3eIg
+</string>
+    <string name="user_location_permission_explanation">This app needs location permissions to show its functionality.</string>
+    <string name="user_location_permission_not_granted">You didn\'t grant location permissions.</string>
 </resources>
