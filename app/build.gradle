@@ -19,6 +19,11 @@ android {
     testOptions {
         unitTests.returnDefaultValues = true
     }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 }
 
 dependencies {
@@ -33,6 +38,10 @@ dependencies {
     implementation "com.google.android.gms:play-services-location:16.0.0"
     implementation 'com.google.android.gms:play-services-places:16.0.0'
     implementation 'com.google.code.gson:gson:2.8.5'
+    implementation 'com.mapbox.mapboxsdk:mapbox-android-sdk:7.2.0'
+    implementation 'com.mapbox.mapboxsdk:mapbox-android-navigation-ui:0.33.2'
+
+
 
     testImplementation 'junit:junit:4.12'
 
@@ -42,6 +51,7 @@ dependencies {
 
     repositories {
         mavenCentral()
+        maven { url 'https://mapbox.bintray.com/mapbox' }
         google()
     }
     implementation 'com.android.support:design:28.0.0'
@@ -50,5 +60,3 @@ dependencies {
 
 
 }
-
-

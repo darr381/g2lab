@@ -122,8 +122,12 @@ public  float calcDistance(LatLng currentloc){
 }
 
 
+    public double getLat() {
+        return lat;
+    }
 
-
-
+    public double getLng() {
+        return lng;
+    }
 }
 

@@ -110,7 +110,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onCreate(savedInstanceState);
         requestQueue=Volley.newRequestQueue(this);
         setContentView(R.layout.activity_maps);
-        updateValuesFromBundle(savedInstanceState);
+//        updateValuesFromBundle(savedInstanceState);
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -328,6 +328,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
+
         mMap = googleMap;
 
         mMap.setPadding(0, pxToDP(70), 0, pxToDP(70));
