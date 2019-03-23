@@ -16,7 +16,7 @@ public class SplashActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash2);
 
-        final Intent launch = new Intent(this,MapsActivity.class);
+        final Intent launch = new Intent(this,TBTActivity.class);
 
 
 //        RotateAnimation anim = new RotateAnimation(0f, 360f,Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);

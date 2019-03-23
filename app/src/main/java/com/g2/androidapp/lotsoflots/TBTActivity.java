@@ -73,7 +73,7 @@ public class TBTActivity extends AppCompatActivity implements OnMapReadyCallback
 
 
 
-//    RequestQueue requestQueue;
+    RequestQueue requestQueue;
 
 
     @Override
@@ -82,7 +82,7 @@ public class TBTActivity extends AppCompatActivity implements OnMapReadyCallback
 
         super.onCreate(savedInstanceState);
 
-//        requestQueue=Volley.newRequestQueue(this);
+        requestQueue=Volley.newRequestQueue(this);
 
         Mapbox.getInstance(this, getString(R.string.access_token));
         setContentView(R.layout.activity_tbt);
@@ -91,8 +91,8 @@ public class TBTActivity extends AppCompatActivity implements OnMapReadyCallback
         mapView.getMapAsync(this);
 
 
-//        APIRetrieveSystem retrieve = new APIRetrieveSystem(requestQueue);
-//        retrieve.retrieveCarParks();
+        APIRetrieveSystem retrieve = new APIRetrieveSystem(requestQueue);
+        retrieve.retrieveCarParks();
         Log.d("Response","stage 2");
 
 
@@ -106,7 +106,7 @@ public class TBTActivity extends AppCompatActivity implements OnMapReadyCallback
             public void onStyleLoaded(@NonNull Style style) {
                 Log.d("Response","stage 3");
 
-//                ArrayList<CarPark> AllCarparks = CarParkList.getCarParkList();
+                ArrayList<CarPark> AllCarparks = CarParkList.getCarParkList();
 //
 //                for (int i =0; i<5; i++) {
 //                    AllCarparks.add(i, (CarParkList.getCarParkList().get(i)));
@@ -123,25 +123,25 @@ public class TBTActivity extends AppCompatActivity implements OnMapReadyCallback
                 // Add the marker image to map
 
 //
-//                for (CarPark carpark : AllCarparks) {
-//                    double lon = carpark.getLng();
-//                    double lat = carpark.getLat();
+                for (CarPark carpark : AllCarparks) {
+                    double lon = carpark.getLng();
+                    double lat = carpark.getLat();
+
+                    style.addImage("marker-icon-id"+carpark.carpark_number,
+                            BitmapFactory.decodeResource(
+                                    TBTActivity.this.getResources(), R.drawable.mapbox_marker_icon_default));
+
+                    GeoJsonSource geoJsonSource = new GeoJsonSource("source-id"+carpark.carpark_number, Feature.fromGeometry(
+                            Point.fromLngLat(lon, lat)));
+                    style.addSource(geoJsonSource);
+                    SymbolLayer symbolLayer = new SymbolLayer("layer-id"+carpark.carpark_number, "source-id"+carpark.carpark_number);
+                    symbolLayer.withProperties(
+                            PropertyFactory.iconImage("marker-icon-id"+carpark.carpark_number)
+                    );
+                    style.addLayer(symbolLayer);
 //
-//                    style.addImage("marker-icon-id"+carpark.carpark_number,
-//                            BitmapFactory.decodeResource(
-//                                    TBTActivity.this.getResources(), R.drawable.mapbox_marker_icon_default));
 //
-//                    GeoJsonSource geoJsonSource = new GeoJsonSource("source-id"+carpark.carpark_number, Feature.fromGeometry(
-//                            Point.fromLngLat(lon, lat)));
-//                    style.addSource(geoJsonSource);
-//                    SymbolLayer symbolLayer = new SymbolLayer("layer-id"+carpark.carpark_number, "source-id"+carpark.carpark_number);
-//                    symbolLayer.withProperties(
-//                            PropertyFactory.iconImage("marker-icon-id"+carpark.carpark_number)
-//                    );
-//                    style.addLayer(symbolLayer);
-////
-////
-//                }
+                }
 
 
 //                style.addImage("marker-icon-id",
