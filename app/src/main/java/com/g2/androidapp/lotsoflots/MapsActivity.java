@@ -33,6 +33,8 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.Volley;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.api.ResolvableApiException;
@@ -100,10 +102,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             .setCountry("SG")
             .build();
 
+    //create a request queue
+    RequestQueue requestQueue;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         instance = Facade.getInstance();
         super.onCreate(savedInstanceState);
+        requestQueue=Volley.newRequestQueue(this);
         setContentView(R.layout.activity_maps);
         updateValuesFromBundle(savedInstanceState);
 
@@ -202,7 +208,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             e.printStackTrace();
         }
 
-        APIRetrieveSystem.retrieveCarParks(this);
+        APIRetrieveSystem retrieve = new APIRetrieveSystem(requestQueue);
+        retrieve.retrieveCarParks();
 
     }
 
@@ -441,7 +448,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         //listToDisplay.add(new CarPark("E8","ABC",  0, 0, 47.6739881, -122.121512));
         //CarParkList.setCarparksList(listToDisplay);
 
-        listToDisplay = instance.getSortedList(new LatLng(location.getLatitude(), location.getLongitude()), this);
+        listToDisplay = instance.getSortedList(new LatLng(location.getLatitude(), location.getLongitude()));
         if(listToDisplay.size() == 0){
             Log.d("listdisplay", "SIZE 0");
         }

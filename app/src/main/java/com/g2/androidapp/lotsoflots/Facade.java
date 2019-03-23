@@ -27,12 +27,12 @@ public class Facade {
         return instance;
     }
 
-    public ArrayList<CarPark> getSortedList(LatLng location, Context context){
+    public ArrayList<CarPark> getSortedList(LatLng location){
         if(prevTime == null){
             prevTime = Preference.getTime();
-            APIRetrieveSystem.retrieveall(context);
+            APIRetrieveSystem.retrieveall();
         }else if(!prevTime.equals(Preference.getTime())){
-            APIRetrieveSystem.retrieveall(context);
+            APIRetrieveSystem.retrieveall();
             prevTime = Preference.getTime();
         }
         Log.d("Response", CarParkList.getCarParkList().size()+"");

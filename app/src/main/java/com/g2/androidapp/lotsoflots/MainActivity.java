@@ -18,6 +18,7 @@ import java.time.Instant;
 
 public class MainActivity extends AppCompatActivity {
 
+
     final static String TAG = "Main";
 
     @Override
@@ -68,12 +69,34 @@ public class MainActivity extends AppCompatActivity {
                //testapi_output.setText(Instant.now().toString());
 
                 Preference.setTime("2359");
-                APIRetrieveSystem.retrieveall(MainActivity.this);
+                APIRetrieveSystem.retrieveall();
                testapi_output.setText("ran!");
             }
         });
 
         //testing of API retrieval ends here
+        //testing of API retrieval 2 starts here
+
+        Button testapi2_button = (Button) findViewById(R.id.testapi2_button);
+        //final TextView testapi_output = (TextView) findViewById(R.id.testapi_output);
+
+        testapi2_button.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v){
+                //APIRetrieveSystem.retrieveCarParks(MainActivity.this);
+
+                //APIRetrieveSystem.retrieveCarParks(MainActivity.this);
+                //testapi_output.setText(CarParkList.getCarParkList().get(1).vacancies);
+
+                //testapi_output.setText(Instant.now().toString());
+
+                //Preference.setTime("2359");
+                APIRetrieveSystem2.retrieveCarParks2(MainActivity.this);
+                testapi_output.setText("ran 2!");
+            }
+        });
+
+        //testing of API retrieval 2 ends here
 
         //testing of sorting system starts here
 

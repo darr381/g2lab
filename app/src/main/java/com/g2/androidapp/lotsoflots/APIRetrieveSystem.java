@@ -24,10 +24,11 @@ public class APIRetrieveSystem {
 
 
     public static String teststring;
+    private static RequestQueue requestQueue;
 
 
-    APIRetrieveSystem(){ //constructor
-
+    APIRetrieveSystem(RequestQueue queue){ //constructor
+        requestQueue = queue;
     }
 
 
@@ -176,7 +177,7 @@ public class APIRetrieveSystem {
         return date_time.substring(0, 19);
     }
 
-    static void retrieveall(Context context){
+    static void retrieveall(){
 
         // get date and time
         String date_time = getTime();
@@ -184,14 +185,14 @@ public class APIRetrieveSystem {
 
 
         //first we fill the carpark list array with carpark objects (with no vacancies yet)
-        retrieveCarParks(context);
+        retrieveCarParks();
         Log.d("Response","carpark retrieval success");
         // then we fill the vacancies, where we have to do a key match
-        retrieveVacancies(date_time, context);
+        retrieveVacancies(date_time);
         Log.d("Response","carpark vacancy retrieval success");
     }
 
-    static void retrieveCarParks(Context context){
+    static void retrieveCarParks(){
         int offset = 0;
 
 //        if(CarParkList.getCarParkList().size() != 0){
@@ -206,8 +207,6 @@ public class APIRetrieveSystem {
             String URL = URLpart1 + offset + URLpart2;
 
             //Log.d("Response", "URL is " + URL);
-
-            RequestQueue requestQueue = Volley.newRequestQueue(context);
 
             //create json request
             JsonObjectRequest objectRequest = new JsonObjectRequest(
@@ -256,20 +255,16 @@ public class APIRetrieveSystem {
         Log.d("Response", "end of retrieveCarParks");
     }
 
-    static void retrieveVacancies(Context context){
+    static void retrieveVacancies(){
         String timeStamp = Instant.now().toString();
-        retrieveVacancies(timeStamp.substring(0,19), context);
+        retrieveVacancies(timeStamp.substring(0,19));
 
     }
 
-    static void retrieveVacancies(String date_time, Context context){
+    static void retrieveVacancies(String date_time){
 
         String URL = "https://api.data.gov.sg/v1/transport/carpark-availability?date_time=";
         String ReqURL = URL + date_time;
-
-
-        //create a request queue
-        RequestQueue requestQueue=Volley.newRequestQueue(context);
 
         //create json request
         JsonObjectRequest objectRequest = new JsonObjectRequest(

@@ -9,6 +9,7 @@ public class CarPark {
     /**  Attributes for APIRetrieveSystem   */
     protected String carpark_number;
     protected String carpark_address;
+    protected String carpark_name;
     protected float x_coord;
     protected float y_coord;
     protected double lat;
@@ -36,6 +37,7 @@ public class CarPark {
     CarPark(String number, String address, float x, float y, double latitude, double longitude){
         carpark_number = number;
         carpark_address = address;
+        carpark_name = address;
         x_coord = x;
         y_coord = y;
         lat = latitude;
@@ -46,6 +48,7 @@ public class CarPark {
     CarPark(String number, String address, float x, float y,  double latitude, double longitude, int vac){
         carpark_number = number;
         carpark_address = address;
+        carpark_name = address;
         x_coord = x;
         y_coord = y;
         lat = latitude;
@@ -62,7 +65,7 @@ public class CarPark {
     }
 
     public String getName(){
-        return carpark_number;
+        return carpark_name;
     }
 
     public int getCapacity(){
