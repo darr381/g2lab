@@ -12,28 +12,34 @@ import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.chauthai.swipereveallayout.SwipeRevealLayout;
+import com.chauthai.swipereveallayout.ViewBinderHelper;
+
 import java.util.ArrayList;
 
 import static android.content.Context.MODE_PRIVATE;
 
 public class BookmarkAdapter extends ArrayAdapter<BookmarkData> {
     BookmarkDataManager manager;
+    private final ViewBinderHelper viewBinderHelper = new ViewBinderHelper();
 
     public BookmarkAdapter(Context context, int resource, ArrayList<BookmarkData> data, BookmarkDataManager bookmarkManager){
         super(context,resource,data);
         manager = bookmarkManager;
+        viewBinderHelper.setOpenOnlyOne(true);
     }
 
 
     @Override
     public View getView (final int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-        LinearLayout view;
+        SwipeRevealLayout view;
         if (convertView == null) {
-            view = ((LinearLayout) LayoutInflater.from(getContext()).inflate(R.layout.bookmark_list_item, parent, false));
+            view = ((SwipeRevealLayout) LayoutInflater.from(getContext()).inflate(R.layout.bookmark_list_item, parent, false));
         } else {
-            view = ((LinearLayout) convertView);
+            view = ((SwipeRevealLayout) convertView);
         }
         TextView textView = view.findViewById(R.id.bookmark_address);
+        TextView deleteView = view.findViewById(R.id.bookmark_delete);
         textView.setText(getItem(position).name);
         textView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -43,13 +49,16 @@ public class BookmarkAdapter extends ArrayAdapter<BookmarkData> {
                 getContext().startActivity(intent);
             }
         });
-        textView.setOnLongClickListener(new View.OnLongClickListener() {
+        deleteView.setOnClickListener(new View.OnClickListener() {
             @Override
-            public boolean onLongClick(View view) {
+            public void onClick(View view) {
                 manager.deleteBookmark(getItem(position).name);
-                return false;
             }
         });
+
+        viewBinderHelper.bind((view), getItem(position).name);
         return view;
     }
+
+
 }
