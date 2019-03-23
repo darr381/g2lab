@@ -11,6 +11,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.gson.Gson;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -19,6 +20,8 @@ import org.json.JSONObject;
 import java.text.ParseException;
 import java.time.Instant;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 public class APIRetrieveSystem {
 
@@ -311,4 +314,73 @@ public class APIRetrieveSystem {
         requestQueue.add(objectRequest);
 
     }
+
+
+    static void retrieveLTACarparks() {
+
+        JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.GET,
+                "http://datamall2.mytransport.sg/ltaodataservice/CarParkAvailabilityv2", null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        try {
+                            Log.d("Response", response.toString());
+                            JSONArray value = response.getJSONArray("value");
+                            Log.d("Response", "length of value is: " + value.length());
+                            for(int i = 0; i < value.length(); i++) {
+
+                                JSONObject temp = value.getJSONObject(i);
+                                Log.d("Response", "carpark ID is: " + temp.getString("CarParkID"));
+                                CarPark entry = new CarPark(
+                                        temp.getString("CarParkID"),
+                                        temp.getString("Development"),
+                                        0,
+                                        0,
+                                        Double.parseDouble(temp.getString("Location").split(" ")[0]),
+                                        Double.parseDouble(temp.getString("Location").split(" ")[1]),
+                                        Integer.parseInt(temp.getString("AvailableLots")));
+                                //Log.d("Response", "temp is " + entry.carpark_address);
+                                CarParkList.addCarPark(entry);
+                            }
+
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+
+
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError response) {
+                {
+                    if(response.networkResponse != null && response.networkResponse.data != null){
+                        response = new VolleyError(new String(response.networkResponse.data));
+                    }
+                    Gson gson = new Gson();
+                    Log.d("Response", "error" + gson.toJson(response.networkResponse));
+                    Log.d("Response", "error" + gson.toJson(response.networkResponse.headers));
+
+                }
+            }
+        }) {
+            @Override
+            public Map<String, String> getHeaders() throws com.android.volley.AuthFailureError {
+                HashMap<String, String> headers = new HashMap<String, String>();
+                headers.put("accept", "application/json");
+                headers.put("AccountKey", "UdO0OyIPRCugajEoUNE1UA==");
+                return headers;
+            }
+        };
+
+        // Adding request to request queue
+        requestQueue.add(jsonObjReq);
+
+
+        // Cancelling request
+        // ApplicationController.getInstance().getRequestQueue().cancelAll(tag_json_obj);
+    }
+
+
 }

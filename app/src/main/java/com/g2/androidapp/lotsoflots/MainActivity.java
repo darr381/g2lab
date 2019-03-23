@@ -12,6 +12,8 @@ import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.Volley;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.time.Instant;
@@ -20,9 +22,11 @@ public class MainActivity extends AppCompatActivity {
 
 
     final static String TAG = "Main";
-
+    //create a request queue
+    RequestQueue requestQueue;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        requestQueue=Volley.newRequestQueue(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -69,7 +73,8 @@ public class MainActivity extends AppCompatActivity {
                //testapi_output.setText(Instant.now().toString());
 
                 Preference.setTime("2359");
-                APIRetrieveSystem.retrieveall();
+                APIRetrieveSystem api1 = new APIRetrieveSystem(requestQueue);
+                api1.retrieveall();
                testapi_output.setText("ran!");
             }
         });
@@ -91,7 +96,8 @@ public class MainActivity extends AppCompatActivity {
                 //testapi_output.setText(Instant.now().toString());
 
                 //Preference.setTime("2359");
-                APIRetrieveSystem2.retrieveCarParks2(MainActivity.this);
+                APIRetrieveSystem api2 = new APIRetrieveSystem(requestQueue);
+                api2.retrieveLTACarparks();
                 testapi_output.setText("ran 2!");
             }
         });
