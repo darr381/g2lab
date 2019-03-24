@@ -3,6 +3,8 @@ package com.g2.androidapp.lotsoflots;
 import android.location.Location;
 
 import com.google.android.gms.maps.model.LatLng;
+//import com.mapbox.mapboxsdk.geometry.LatLng;
+
 
 public class CarPark {
 
@@ -23,10 +25,18 @@ public class CarPark {
 
     CarPark(){ int vacancies = 0; }
 
-/*
-    CarPark(double lat, double lng){}
+    public String getCarpark_number() {
+        return carpark_number;
+    }
 
-*/
+    public String getCarpark_name() {
+        return carpark_name;
+    }
+
+    /*
+        CarPark(double lat, double lng){}
+
+    */
     CarPark(double latitude, double longitude, int vac){
         lat = latitude;
         lng = longitude;
@@ -61,6 +71,11 @@ public class CarPark {
     /** Method to get location in the CarPark class */
     public LatLng getLocation(){
         LatLng latlonobject = new LatLng(lat, lng);
+        return latlonobject;
+    }
+
+    public com.mapbox.mapboxsdk.geometry.LatLng getLocationMB(){
+        com.mapbox.mapboxsdk.geometry.LatLng latlonobject = new com.mapbox.mapboxsdk.geometry.LatLng(lat, lng);
         return latlonobject;
     }
 

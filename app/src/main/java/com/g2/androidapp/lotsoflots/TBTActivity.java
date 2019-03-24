@@ -1,22 +1,54 @@
 package com.g2.androidapp.lotsoflots;
 
 
+import android.app.Dialog;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.Typeface;
+import android.location.Location;
 import android.os.Bundle;
 
 import java.util.ArrayList;
 import java.util.List;
 import android.support.annotation.NonNull;
+import android.support.design.widget.BottomSheetBehavior;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.TypedValue;
+import android.view.Gravity;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 // classes needed to initialize map
+import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
+import com.google.android.gms.common.GooglePlayServicesRepairableException;
+import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.places.AutocompleteFilter;
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.ui.PlaceAutocomplete;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.gson.Gson;
 import com.mapbox.mapboxsdk.Mapbox;
+import com.mapbox.mapboxsdk.annotations.IconFactory;
+import com.mapbox.mapboxsdk.annotations.Marker;
+import com.mapbox.mapboxsdk.annotations.MarkerOptions;
 import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.Style;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
+import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.mapboxsdk.annotations.Icon;
 
 import com.mapbox.mapboxsdk.style.layers.PropertyFactory;
 import com.android.volley.RequestQueue;
@@ -70,8 +102,25 @@ public class TBTActivity extends AppCompatActivity implements OnMapReadyCallback
     private NavigationMapRoute navigationMapRoute;
     // variables needed to initialize navigation
     private Button button;
+    private boolean searched = false;
+//    private ProgressBar pg;
+    private Location previouslyLocation;
+    private ArrayList<CarPark> listToDisplay = new ArrayList<>(0);
+    private BottomSheetBehavior mBottomSheetBehavior;
+    LinearLayout clickedItem;
+    CarPark lastCarPark;
 
 
+
+
+    private int PLACE_AUTOCOMPLETE_REQUEST_CODE = 1;
+
+
+
+    AutocompleteFilter autocompleteFilter = new AutocompleteFilter.Builder()
+            .setTypeFilter(Place.TYPE_COUNTRY)
+            .setCountry("SG")
+            .build();
 
     RequestQueue requestQueue;
 
@@ -91,12 +140,284 @@ public class TBTActivity extends AppCompatActivity implements OnMapReadyCallback
         mapView.getMapAsync(this);
 
 
+
         APIRetrieveSystem retrieve = new APIRetrieveSystem(requestQueue);
         retrieve.retrieveCarParks();
         Log.d("Response","stage 2");
 
 
     }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_filter) {
+            startActivity(new Intent(this, Filter.class));
+        }else if(id == R.id.action_bookmarks){
+            startActivity(new Intent(this,BookmarkPage.class));
+        }else if (id == R.id.action_debug){
+            startActivity(new Intent(this,MainActivity.class));
+        }else if (id == R.id.action_about){
+            startActivity(new Intent(this,AboutActivity.class));
+        }else if(id == R.id.action_search){
+            try {
+                Intent intent =
+                        new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_OVERLAY).setBoundsBias(new LatLngBounds(
+                                new com.google.android.gms.maps.model.LatLng(1.093108, 103.563076),
+                                new com.google.android.gms.maps.model.LatLng(1.496751, 104.136911)
+                        )).setFilter(autocompleteFilter)
+                                .build(this);
+                startActivityForResult(intent, PLACE_AUTOCOMPLETE_REQUEST_CODE);
+            } catch (GooglePlayServicesRepairableException e) {
+                // TODO: Handle the error.
+            } catch (GooglePlayServicesNotAvailableException e) {
+                // TODO: Handle the error.
+            }
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == PLACE_AUTOCOMPLETE_REQUEST_CODE) {
+            if (resultCode == RESULT_OK) {
+                Place place = PlaceAutocomplete.getPlace(this, data);
+                //Log.i(TAG, "Place: " + place.getName());
+                Location searchLocation = new Location("");
+                searchLocation.setLongitude(place.getLatLng().longitude);
+                searchLocation.setLatitude(place.getLatLng().latitude);
+                mapboxMap.clear();
+                searched = true;
+                searchLocation(searchLocation);
+                Toast.makeText(TBTActivity.this, place.getName(), Toast.LENGTH_SHORT).show();
+            } else if (resultCode == PlaceAutocomplete.RESULT_ERROR) {
+                Status status = PlaceAutocomplete.getStatus(this, data);
+                // TODO: Handle the error.
+                //Log.i(TAG, status.getStatusMessage());
+
+            } else if (resultCode == RESULT_CANCELED) {
+                // The user canceled the operation.
+            }
+        }
+    }
+
+    private void searchLocation(Location location){
+//        pg.setVisibility(View.VISIBLE);
+
+        IconFactory iconFactory = IconFactory.getInstance(this);
+        Icon icon = iconFactory.fromBitmap(BitmapFactory.decodeFile("/Users/vincent/StudioProjects/g2lab/app/src/main/res/drawable/pin.png"));
+//        Icon icon = BitmapFactory.decodeFile("/sdcard/test2.png")
+
+        previouslyLocation = location;
+        //listToDisplay = SortingSystem.sortCarParkbyDistance(new LatLng(location.getLatitude(),location.getLongitude())); TODO: add call to sorting
+        listToDisplay = new ArrayList<>(0);
+        //listToDisplay.add(new CarPark("E8","ABC",  0, 0, 47.6739881, -122.121512));
+        //CarParkList.setCarparksList(listToDisplay);
+
+        listToDisplay = SortingSystem.getSortedList(new com.google.android.gms.maps.model.LatLng(location.getLatitude(), location.getLongitude()));
+        if(listToDisplay.size() == 0){
+            Log.d("listdisplay", "SIZE 0");
+        }
+        Log.d("listdisplay", "" + CarParkList.getCarParkList().size());
+        mapboxMap.clear();
+
+        for(int i = 0; i < listToDisplay.size(); i++){
+
+            Marker mMarker;
+            mMarker = mapboxMap.addMarker(new MarkerOptions()
+                    .position(new LatLng(listToDisplay.get(i).getLat(), listToDisplay.get(i).getLng()))
+//                    .position(new LatLng(10, 100))
+                    .title(listToDisplay.get(i).getCarpark_name()));
+
+
+        }
+        Log.d("Response", "Size of list: " + listToDisplay.size());
+
+        Marker here = mapboxMap.addMarker(new MarkerOptions()
+                .position(new LatLng(location.getLatitude(),location.getLongitude()))
+                .title("Searched Location")
+                .icon(icon));
+
+        populateCarParkList(listToDisplay);
+//        pg.setVisibility(View.INVISIBLE);
+        if(true){
+            mapboxMap.moveCamera(com.mapbox.mapboxsdk.camera.CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()),15));
+        }
+    }
+    private int pxToDP(int px){
+        final float scale = findViewById(R.id.main_content).getContext().getResources().getDisplayMetrics().density;
+        int dp = (int) (px * scale + 0.5f);
+        return dp;
+    }
+    private void showPin(String carPark){
+        CarPark cp = CarParkList.getCarParkList().get(CarParkList.findCarpark(carPark));
+        //LatLng pos = new LatLng(cp.lat, cp.lng);
+//        mapboxMap.animateCamera(CameraUpdateFactory.newLatLngZoom(cp.getLocation(),17));
+        mapboxMap.animateCamera(com.mapbox.mapboxsdk.camera.CameraUpdateFactory.newLatLngZoom(cp.getLocationMB(), 20));
+//        mapboxMap.animateCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition(cp.getLocation(),(float)0.0,(float)0.0,(float)0.0)), 20);
+        openDialog(cp);
+    }
+    public void openDialog(CarPark cp) {
+
+        AlertDialog alertDialog = new AlertDialog.Builder(this).create();
+
+        // Set Custom Title
+        TextView title = new TextView(this);
+        // Title Properties
+        title.setText("CarPark " + cp.getName());
+        title.setPadding(10, 10, 10, 10);   // Set Position
+        title.setGravity(Gravity.CENTER);
+        title.setTextColor(Color.BLACK);
+        title.setTextSize(20);
+        alertDialog.setCustomTitle(title);
+
+        // Set Message
+        TextView msg = new TextView(this);
+        // Message Properties
+        msg.setText("Vacancies: " + cp.getVacancy() + "/" + cp.getCapacity() + "\n" + "Do you wish to navigate to the car park?");
+        msg.setGravity(Gravity.CENTER_HORIZONTAL);
+        msg.setTextColor(Color.BLACK);
+        alertDialog.setView(msg);
+
+        lastCarPark= cp;
+
+        // Set Button
+        // you can more buttons
+        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL,"NAVIGATE", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                // Perform Action on Button
+//                launchGoogleMaps(MapsActivity.this, lastCarPark.getLocation().latitude, lastCarPark.getLocation().longitude, lastCarPark.getName());
+            }
+        });
+
+        alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE,"CANCEL", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                // Perform Action on Button
+            }
+        });
+
+        new Dialog(getApplicationContext());
+        alertDialog.show();
+
+        // Set Properties for OK Button
+        final Button okBT = alertDialog.getButton(AlertDialog.BUTTON_NEUTRAL);
+        LinearLayout.LayoutParams neutralBtnLP = (LinearLayout.LayoutParams) okBT.getLayoutParams();
+        neutralBtnLP.gravity = Gravity.FILL_HORIZONTAL;
+        okBT.setPadding(50, 10, 10, 10);   // Set Position
+        okBT.setTextColor(Color.BLUE);
+        okBT.setLayoutParams(neutralBtnLP);
+
+        final Button cancelBT = alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE);
+        LinearLayout.LayoutParams negBtnLP = (LinearLayout.LayoutParams) okBT.getLayoutParams();
+        negBtnLP.gravity = Gravity.FILL_HORIZONTAL;
+        cancelBT.setTextColor(Color.RED);
+        cancelBT.setLayoutParams(negBtnLP);
+    }
+    private void populateCarParkList(ArrayList<CarPark> cpList){
+        View bottomSheet = findViewById( R.id.bottom_sheet);
+        mBottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
+
+        mBottomSheetBehavior.setPeekHeight(pxToDP(70));
+        mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+
+        LinearLayout scrollContents = findViewById(R.id.scrollContents);
+
+        scrollContents.removeAllViewsInLayout();
+
+        if(cpList.size() > 0){
+            for(int j = 0; j < cpList.size(); j++){
+                LinearLayout itemLayout = new LinearLayout(this);
+
+                // Implement it's on click listener.
+                itemLayout.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        // Show a toast message.
+                        clickedItem = (LinearLayout) view;
+                        TextView tv = (TextView) clickedItem.getChildAt(4);
+                        Toast.makeText(TBTActivity.this, tv.getText(), Toast.LENGTH_SHORT).show();
+                        showPin((String)tv.getText());
+                    }
+                });
+
+
+                RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(
+                        RelativeLayout.LayoutParams.MATCH_PARENT,
+                        RelativeLayout.LayoutParams.WRAP_CONTENT
+                );
+
+                lp.setMargins(10,10,10,10);
+                itemLayout.setLayoutParams(lp);
+                itemLayout.setOrientation(LinearLayout.VERTICAL);
+
+                TextView title = new TextView(this);
+                TextView contents = new TextView(this);
+                TextView index = new TextView(this);
+                TextView address = new TextView(this);
+                TextView distance = new TextView(this);
+                title.setText("CarPark " + cpList.get(j).getName());
+                title.setTypeface(title.getTypeface(), Typeface.BOLD_ITALIC);
+                title.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
+                title.setPadding(5, 5, 5, 5);
+                contents.setText("Vacancy: " + cpList.get(j).getVacancy() + "/" + cpList.get(j).getCapacity());
+                contents.setPadding(5, 5, 5, 20);
+                distance.setText("Distance: " + (int)cpList.get(j).getDistance() + " meters");
+                distance.setPadding(5, 5, 5, 20);
+                index.setText(cpList.get(j).getName());
+                index.setVisibility(View.INVISIBLE);
+                address.setText(cpList.get(j).getCarpark_address());
+                address.setPadding(5, 5, 5, 20);
+                itemLayout.addView(title);
+                itemLayout.addView(contents);
+                itemLayout.addView(distance);
+                itemLayout.addView(address);
+                itemLayout.addView(index);
+
+                View v = new View(this);
+                v.setLayoutParams(new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        1
+                ));
+                v.setBackgroundColor(Color.parseColor("#B3B3B3"));
+                itemLayout.addView(v);
+                scrollContents.addView(itemLayout);
+            }
+        }else{
+            LinearLayout itemLayout = new LinearLayout(this);
+
+            RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(
+                    RelativeLayout.LayoutParams.MATCH_PARENT,
+                    RelativeLayout.LayoutParams.WRAP_CONTENT
+            );
+
+            lp.setMargins(10,10,10,10);
+            itemLayout.setLayoutParams(lp);
+            itemLayout.setOrientation(LinearLayout.VERTICAL);
+
+            TextView title = new TextView(this);
+            title.setText("No Results");
+            title.setTypeface(title.getTypeface(), Typeface.BOLD_ITALIC);
+            title.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
+            title.setPadding(5, 5, 5, 5);
+            itemLayout.addView(title);
+            scrollContents.addView(itemLayout);
+        }
+    }
+
 
     @Override
     public void onMapReady(@NonNull final MapboxMap mapboxMap) {
