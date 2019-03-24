@@ -193,6 +193,9 @@ public class APIRetrieveSystem {
         // then we fill the vacancies, where we have to do a key match
         retrieveVacancies(date_time);
         Log.d("Response","carpark vacancy retrieval success");
+
+//        retrieveLTACarparks();
+
     }
 
     static void retrieveCarParks(){

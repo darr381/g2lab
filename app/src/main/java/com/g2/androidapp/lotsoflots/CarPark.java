@@ -105,6 +105,10 @@ public class CarPark {
         vacancies = vacancy;
     }
 
+    public String getNumber(){
+        return carpark_number;
+    }
+
 
 
 public  float calcDistance(LatLng currentloc){

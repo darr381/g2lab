@@ -369,11 +369,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     /** Called when the user clicks a marker. */
     @Override
-    public boolean onMarkerClick(final Marker marker) {
+    public boolean onMarkerClick(Marker marker) {
 
         if(marker.getTag().getClass() == CarPark.class){
             CarPark cp = (CarPark) marker.getTag();
-            showPin(cp.getName());
+            Log.d("Response", "In marker, the carpark is: "+ cp.carpark_name);
+            showPin(cp.getNumber());
         }
         // Retrieve the data from the marker.
 
@@ -530,7 +531,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 distance.setPadding(5, 5, 5, 20);
                 index.setText(cpList.get(j).getName());
                 index.setVisibility(View.INVISIBLE);
-                address.setText(cpList.get(j).getCarpark_address());
+                address.setText(cpList.get(j).getNumber());
                 address.setPadding(5, 5, 5, 20);
                 itemLayout.addView(title);
                 itemLayout.addView(contents);
@@ -572,6 +573,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private void showPin(String carPark){
         CarPark cp = CarParkList.getCarParkList().get(CarParkList.findCarpark(carPark));
         //LatLng pos = new LatLng(cp.lat, cp.lng);
+        Log.d("Response", "cp in showPin is: "+ cp.getNumber());
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(cp.getLocation(),17));
         openDialog(cp);
     }
